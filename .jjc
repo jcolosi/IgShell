@@ -1,0 +1,370 @@
+#----------------------------------------------------------------------------
+# .jjc - A portable resource file for Unix-like operating systems
+#----------------------------------------------------------------------------
+
+
+
+#----------------------------------------------------------------------------
+# Reset
+#----------------------------------------------------------------------------
+unalias -a
+
+unsetFunctions () {
+ for func in $( set | grep ' ()' | grep -v 'shell_session_' | grep -v update_terminal_cwd | grep -v '#IGNORE' | sed 's/ ().*$//' )
+ do
+  unset -f $func
+ done
+}
+unsetFunctions
+
+
+
+#----------------------------------------------------------------------------
+# Aliases
+#----------------------------------------------------------------------------
+alias dim='di | grep $USER'
+alias h='history'
+#alias resrc='source ~/.jjc'
+alias resrc='source ~/.jjc; di'
+alias fi='du -h -d1'
+alias ip='curl http://www.my-ip-address.net 2>/dev/null | grep h3 | sed "s/.*<h3>//" | sed "s/<\/h3>.*//"'
+alias mem='sysctl -h hw | grep mem'
+
+
+
+#----------------------------------------------------------------------------
+# Processes
+#----------------------------------------------------------------------------
+alias psc='ps -eopid,user,args | grep -v "ps -eopid,user,args"'
+psv () {
+ psc | grep "$*" | sort -n | grep -v grep | grep -v "sort -n"
+}
+alias psm='psv $USER'
+
+
+
+#----------------------------------------------------------------------------
+# File Manipulation
+#----------------------------------------------------------------------------
+
+# Remove empty lines
+squeeze () {
+ tr -s '\n' '\n' < $*
+}
+
+backup () {
+ date=`date +%Y%m%d%H%M%S`
+ cp -r $1 $1.$date
+}
+
+duff () {
+ diff $* | grep "^[<>].." | sort
+}
+
+exe () {
+ chmod 755 $*
+}
+
+mirror () {
+ sed 's/^\(.*\)$/\1 \1/' $*
+}
+
+invert () {
+ grep -n . $1 | sort -rn | sed 's/^[0-9]*://g'
+}
+ 
+
+
+#----------------------------------------------------------------------------
+# System
+#----------------------------------------------------------------------------
+
+#vi () {
+ #/usr/bin/vi $*
+ #di
+#}
+
+PATH=.:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:~/bin
+
+# Lookup a command, alias, or function 
+what () {
+ answer=`which $*`
+ [[ ${answer} ]] && echo "$* is a command ${answer}"
+ [[ ${answer} ]] && return
+
+ answer=`alias $* 2>/dev/null`
+ [[ ${answer} ]] && echo "$* is an ${answer}"
+ [[ ${answer} ]] && return
+
+ answer=`type $* 2>/dev/null`
+ [[ ${answer} ]] && echo "${answer}"
+ [[ ${answer} ]] && return
+
+ echo "$* is not assigned"
+}
+
+nv () {
+ env | sed 's/\(.*\)=/\
+\1\
+ /g' | sed 's/:/\
+ /g'
+}
+
+alias lf='ls -alR | grep ^-'
+
+#----------------------------------------------------------------------------
+# Navigation
+#----------------------------------------------------------------------------
+# TODO: resrc deletes aliases made with @
+
+declare -a forwardlist
+declare -a _filelist
+
+alias pl='printf "back: "; dirs; echo "frwd: ${forwardlist[@]}"'
+alias fx='unset forwardlist'
+alias bx='dirs -c'
+alias px='bx; fx'
+tabs -6
+PS1='\n> '
+alias context='echo "$PWD"'
+
+# Notes: The number in the ls -l is the total number of files
+_all=""
+alias _listshow='ls -lho${_all} | grep -v "^total \d\d*$" | sed "s/^/	/" | grep -n .'
+
+_listcapture () {
+ tmp=$_all
+ shopt -s nullglob
+ [[ -z $tmp ]] && _filelist=(.. *) 
+ [[ ! -z $tmp ]] && _filelist=(.* *)
+ [[ ! -z $tmp ]] && _filelist=("${_filelist[@]:1}")
+ shopt -u nullglob
+}
+
+#NOTE: n99 calls g calls cd calls c calls pushd
+fl () {
+ for i in "${_filelist[@]}"
+ do
+  printf "[$i] "
+ done
+}
+
+# g to be called for singles ONLY
+g () {
+ [[ -d "$*" ]] && eval "cd \"$*\""
+ [[ -f "$*" ]] && eval "vi \"$*\""
+}
+
+alias di='clear; list; context'
+da () {
+ tmp=$_all
+ [[ -z $tmp ]] && _all="A"
+ [[ ! -z $tmp ]] && _all=""
+ di
+}
+
+list () {
+ _listshow
+ _listcapture
+}
+
+c () {
+ [[ -z $* ]] && pushd ~ > /dev/null
+ [[ ! -z $* ]] && eval "pushd \"$*\" > /dev/null"
+}
+
+cd () {
+ c $*
+ fx
+ di
+}
+
+b () {
+ backlist=`dirs +1 2> /dev/null`
+ [[ -z $backlist ]] && return
+ forwardlist+=(`pwd`)
+ popd > /dev/null
+ di
+}
+
+f () {
+ [[ -z $forwardlist ]] && return
+ target=${forwardlist[@]: -1}
+ unset 'forwardlist[${#forwardlist[@]}-1]'
+ c $target
+ di
+}
+
+@ () {
+ eval "alias $1='cd $PWD'"
+}
+
+
+
+#----------------------------------------------------------------------------
+# Numeric Navigation
+#----------------------------------------------------------------------------
+alias 1='g ${_filelist[1]}'
+alias 2='g ${_filelist[2]}'
+alias 3='g ${_filelist[3]}'
+alias 4='g ${_filelist[4]}'
+alias 5='g ${_filelist[5]}'
+alias 6='g ${_filelist[6]}'
+alias 7='g ${_filelist[7]}'
+alias 8='g ${_filelist[8]}'
+alias 9='g ${_filelist[9]}'
+alias 10='g ${_filelist[10]}'
+alias 11='g ${_filelist[11]}'
+alias 12='g ${_filelist[12]}'
+alias 13='g ${_filelist[13]}'
+alias 14='g ${_filelist[14]}'
+alias 15='g ${_filelist[15]}'
+alias 16='g ${_filelist[16]}'
+alias 17='g ${_filelist[17]}'
+alias 18='g ${_filelist[18]}'
+alias 19='g ${_filelist[19]}'
+alias 20='g ${_filelist[20]}'
+alias 21='g ${_filelist[21]}'
+alias 22='g ${_filelist[22]}'
+alias 23='g ${_filelist[23]}'
+alias 24='g ${_filelist[24]}'
+alias 25='g ${_filelist[25]}'
+alias 26='g ${_filelist[26]}'
+alias 27='g ${_filelist[27]}'
+alias 28='g ${_filelist[28]}'
+alias 29='g ${_filelist[29]}'
+alias 30='g ${_filelist[30]}'
+alias 31='g ${_filelist[31]}'
+alias 32='g ${_filelist[32]}'
+alias 33='g ${_filelist[33]}'
+alias 34='g ${_filelist[34]}'
+alias 35='g ${_filelist[35]}'
+alias 36='g ${_filelist[36]}'
+alias 37='g ${_filelist[37]}'
+alias 38='g ${_filelist[38]}'
+alias 39='g ${_filelist[39]}'
+alias 40='g ${_filelist[40]}'
+alias 41='g ${_filelist[41]}'
+alias 42='g ${_filelist[42]}'
+alias 43='g ${_filelist[43]}'
+alias 44='g ${_filelist[44]}'
+alias 45='g ${_filelist[45]}'
+alias 46='g ${_filelist[46]}'
+alias 47='g ${_filelist[47]}'
+alias 48='g ${_filelist[48]}'
+alias 49='g ${_filelist[49]}'
+alias 50='g ${_filelist[50]}'
+alias 51='g ${_filelist[51]}'
+alias 52='g ${_filelist[52]}'
+alias 53='g ${_filelist[53]}'
+alias 54='g ${_filelist[54]}'
+alias 55='g ${_filelist[55]}'
+alias 56='g ${_filelist[56]}'
+alias 57='g ${_filelist[57]}'
+alias 58='g ${_filelist[58]}'
+alias 59='g ${_filelist[59]}'
+alias 60='g ${_filelist[60]}'
+alias 61='g ${_filelist[61]}'
+alias 62='g ${_filelist[62]}'
+alias 63='g ${_filelist[63]}'
+alias 64='g ${_filelist[64]}'
+alias 65='g ${_filelist[65]}'
+alias 66='g ${_filelist[66]}'
+alias 67='g ${_filelist[67]}'
+alias 68='g ${_filelist[68]}'
+alias 69='g ${_filelist[69]}'
+alias 70='g ${_filelist[70]}'
+alias 71='g ${_filelist[71]}'
+alias 72='g ${_filelist[72]}'
+alias 73='g ${_filelist[73]}'
+alias 74='g ${_filelist[74]}'
+alias 75='g ${_filelist[75]}'
+alias 76='g ${_filelist[76]}'
+alias 77='g ${_filelist[77]}'
+alias 78='g ${_filelist[78]}'
+alias 79='g ${_filelist[79]}'
+alias 80='g ${_filelist[80]}'
+alias 81='g ${_filelist[81]}'
+alias 82='g ${_filelist[82]}'
+alias 83='g ${_filelist[83]}'
+alias 84='g ${_filelist[84]}'
+alias 85='g ${_filelist[85]}'
+alias 86='g ${_filelist[86]}'
+alias 87='g ${_filelist[87]}'
+alias 88='g ${_filelist[88]}'
+alias 89='g ${_filelist[89]}'
+alias 90='g ${_filelist[90]}'
+alias 91='g ${_filelist[91]}'
+alias 92='g ${_filelist[92]}'
+alias 93='g ${_filelist[93]}'
+alias 94='g ${_filelist[94]}'
+alias 95='g ${_filelist[95]}'
+alias 96='g ${_filelist[96]}'
+alias 97='g ${_filelist[97]}'
+alias 98='g ${_filelist[98]}'
+alias 99='g ${_filelist[99]}'
+
+
+vg () {
+	cmd="vi"
+ for file in $( grep -l -d skip $* .* * | sed 's/ /{{SPACE}}/g' )
+	do
+	 file=`echo $file | sed 's/{{SPACE}}/ /g'`
+	 cmd="$cmd \"$file\""
+	done
+	eval $cmd
+}
+
+
+#----------------------------------------------------------------------------
+# Finalize
+#----------------------------------------------------------------------------
+di
+return
+
+
+
+#---------------------------------------------------------------------------
+# S T I L L   N E E D   T O   M I G R A T E
+#---------------------------------------------------------------------------
+# List with line numbers
+alias dn 'clear; set tmp=-lGho${listtype}${listsort}; set tmplist=`ls $tmp | grep -v ^total | grep -n .`;ls $tmp | grep -v ^total | grep -n .; context'
+
+# Grep and list with line numbers
+alias dg 'clear; set tmp=-lGho${listtype}${listsort}; set tmplist=`ls $tmp | grep -v ^total | grep \!* | grep -n .`;ls $tmp | grep -v ^total | grep \!* | grep -n .; context'
+
+# Use the line numbers (from dn or dg) to reference a file or directory
+alias \# 'set tmpindex=`expr \!* \* 8`; g $tmplist[$tmpindex]'
+
+#Break a line at a given character
+alias sunder 'awk '"'BEGIN{RS=\!:1} {print;}'"''
+
+# Reduce to at most 1 empty line - This is a tricky one. sed and perl -pe read one line at a time essentially. Need to write a full perl program.
+#  alias smoosh "sed '/^"\$"/ {; N; /^\n"\$"/D; }'"
+
+# find- <include> <exclude>
+alias find- 'find . -name '"'*\!:2'\*''"' -prune -o -name '"'*\!:1'\*''"' -print'
+
+# jargrep <classname>
+#  search all available jars for the search term
+alias jargrep 'find . -name "*.jar" -exec echo SEARCHING... {} \; -exec jar tvf {} \; | egrep "SEARCHING|\!*"'
+
+# jgrep <search pattern> <file pattern>
+# Search specified files for the search pattern
+# jgrep import *.java 
+alias jgrep 'find . -name "\!$" -exec grep \!:1- {} \;'
+
+alias + 'repeat \!:1 chdir ..; di'
+alias - 'repeat \!:1 chdir *; di'
+
+
+# -i to perl executes files changes in line
+alias jsed 'perl -p -i -e $*'
+#alias jsed 'perl -p -e $*'
+alias lowercase "jsed 'y/QWERTYUIOPASDFGHJKLZXCVBNM/qwertyuiopasdfghjklzxcvbnm/' \!*"
+alias uppercase "jsed 'y/qwertyuiopasdfghjklzxcvbnm/QWERTYUIOPASDFGHJKLZXCVBNM/' \!*"
+alias vm "jsed 's/\r\n/\n/g' \!*"
+alias lc "cf 's/(.*)/lc("'$1'")/e' \!*"
+alias uc "cf 's/(.*)/uc("'$1'")/e' \!*"
+alias ucf "cf 's/(.*)/ucfirst("'$1'")/e' \!*"
+#---------------------------------------------------------------------------
