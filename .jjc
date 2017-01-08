@@ -24,8 +24,7 @@ unsetFunctions
 #----------------------------------------------------------------------------
 alias dim='di | grep $USER'
 alias h='history'
-#alias resrc='source ~/.jjc'
-alias resrc='source ~/.jjc; di'
+alias resrc='source ~/Workspace/IgShell/.jjc; di'
 alias fi='du -h -d1'
 alias ip='curl http://www.my-ip-address.net 2>/dev/null | grep h3 | sed "s/.*<h3>//" | sed "s/<\/h3>.*//"'
 alias mem='sysctl -h hw | grep mem'
