@@ -24,7 +24,7 @@ unsetFunctions
 #----------------------------------------------------------------------------
 alias dim='di | grep $USER'
 alias h='history'
-alias resrc='source ~/Workspace/IgShell/.jjc; di'
+alias resrc='source ~/Workspace/IgShell/.jjc'
 alias fi='du -h -d1'
 alias ip='curl http://www.my-ip-address.net 2>/dev/null | grep h3 | sed "s/.*<h3>//" | sed "s/<\/h3>.*//"'
 alias mem='sysctl -h hw | grep mem'
@@ -46,10 +46,21 @@ alias psm='psv $USER'
 # File Manipulation
 #----------------------------------------------------------------------------
 
-# Remove empty lines
+# Empty lines -> 0
 squeeze () {
  tr -s '\n' '\n' < $*
 }
+
+# Empty lines -> at most 1
+smoosh () {
+ local count=0
+ while IFS='' read -r line || [[ -n "$line" ]]; do
+  [[ -z $line ]] && (( count++ ))
+  [[ ! -z $line ]] && count=0
+  [[ $count -lt 2 ]] && echo $line
+	done < "$1"
+}
+
 
 backup () {
  date=`date +%Y%m%d%H%M%S`
@@ -77,26 +88,20 @@ invert () {
 #----------------------------------------------------------------------------
 # System
 #----------------------------------------------------------------------------
-
-#vi () {
- #/usr/bin/vi $*
- #di
-#}
-
 PATH=.:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:~/bin
 
 # Lookup a command, alias, or function 
 what () {
- answer=`which $*`
- [[ ${answer} ]] && echo "$* is a command ${answer}"
+ answer=`type $* 2>/dev/null`
+ [[ ${answer} ]] && echo "${answer}"
  [[ ${answer} ]] && return
 
  answer=`alias $* 2>/dev/null`
  [[ ${answer} ]] && echo "$* is an ${answer}"
  [[ ${answer} ]] && return
 
- answer=`type $* 2>/dev/null`
- [[ ${answer} ]] && echo "${answer}"
+ answer=`which $*`
+ [[ ${answer} ]] && echo "$* is a command ${answer}"
  [[ ${answer} ]] && return
 
  echo "$* is not assigned"
@@ -304,6 +309,8 @@ alias 98='g ${_filelist[98]}'
 alias 99='g ${_filelist[99]}'
 
 
+
+# Open files that contain certain input
 vg () {
 	cmd="vi"
  for file in $( grep -l -d skip $* .* * | sed 's/ /{{SPACE}}/g' )
@@ -312,6 +319,36 @@ vg () {
 	 cmd="$cmd \"$file\""
 	done
 	eval $cmd
+}
+
+# Sunder - break input by a delimiter
+#        - the elusive sunder is complete!
+#        - works with params and pipe!
+# usage:
+#        sunder : $PATH
+#        echo $PATH | sunder :
+sunder () {
+
+	# Get the first param as the delimiter, and then shift it off the input stack
+ local delim=$1; shift
+
+	# Branch on whether there's piped input
+ [[ -t 0 ]] && input=$* || input=$(cat -)
+
+	# Avoid expansion of *
+ set -f
+
+	# Parse the input using the delimiter
+ array=(${input//$delim/ })
+
+	# Print the parsed input
+ for i in "${!array[@]}"
+ do
+  echo "${array[i]}"
+	done
+
+	# Reset globbing
+	set +f
 }
 
 
@@ -326,21 +363,6 @@ return
 #---------------------------------------------------------------------------
 # S T I L L   N E E D   T O   M I G R A T E
 #---------------------------------------------------------------------------
-# List with line numbers
-alias dn 'clear; set tmp=-lGho${listtype}${listsort}; set tmplist=`ls $tmp | grep -v ^total | grep -n .`;ls $tmp | grep -v ^total | grep -n .; context'
-
-# Grep and list with line numbers
-alias dg 'clear; set tmp=-lGho${listtype}${listsort}; set tmplist=`ls $tmp | grep -v ^total | grep \!* | grep -n .`;ls $tmp | grep -v ^total | grep \!* | grep -n .; context'
-
-# Use the line numbers (from dn or dg) to reference a file or directory
-alias \# 'set tmpindex=`expr \!* \* 8`; g $tmplist[$tmpindex]'
-
-#Break a line at a given character
-alias sunder 'awk '"'BEGIN{RS=\!:1} {print;}'"''
-
-# Reduce to at most 1 empty line - This is a tricky one. sed and perl -pe read one line at a time essentially. Need to write a full perl program.
-#  alias smoosh "sed '/^"\$"/ {; N; /^\n"\$"/D; }'"
-
 # find- <include> <exclude>
 alias find- 'find . -name '"'*\!:2'\*''"' -prune -o -name '"'*\!:1'\*''"' -print'
 
@@ -356,7 +378,6 @@ alias jgrep 'find . -name "\!$" -exec grep \!:1- {} \;'
 alias + 'repeat \!:1 chdir ..; di'
 alias - 'repeat \!:1 chdir *; di'
 
-
 # -i to perl executes files changes in line
 alias jsed 'perl -p -i -e $*'
 #alias jsed 'perl -p -e $*'
@@ -366,4 +387,9 @@ alias vm "jsed 's/\r\n/\n/g' \!*"
 alias lc "cf 's/(.*)/lc("'$1'")/e' \!*"
 alias uc "cf 's/(.*)/uc("'$1'")/e' \!*"
 alias ucf "cf 's/(.*)/ucfirst("'$1'")/e' \!*"
+
+#Pull in Shell and Perl scripts
+#what about the script that changed file names
+#> cf 's/x.z/foo/g' *.java
+
 #---------------------------------------------------------------------------
