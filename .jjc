@@ -351,6 +351,13 @@ sunder () {
 	set +f
 }
 
+jsed () {
+ perl -p -i -e $*
+}
+
+uppercase () {
+ jsed 'y/qwertyuiopasdfghjklzxcvbnm/QWERTYUIOPASDFGHJKLZXCVBNM/' $*
+}
 
 #----------------------------------------------------------------------------
 # Finalize
