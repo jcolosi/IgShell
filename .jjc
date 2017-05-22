@@ -121,6 +121,9 @@ alias lf='ls -alR | grep ^-'
 #----------------------------------------------------------------------------
 # TODO: resrc deletes aliases made with @
 
+alias j0='ssh 10.176.164.30
+alias j1='ssh 10.176.164.31
+
 declare -a forwardlist
 declare -a _filelist
 
@@ -134,7 +137,7 @@ alias context='echo "$PWD"'
 
 # Notes: The number in the ls -l is the total number of files
 _all=""
-alias _listshow='ls -lho${_all} | grep -v "^total \d\d*$" | sed "s/^/	/" | grep -n .'
+alias _listshow='ls -lho${_all} | grep -v "^total [0-9][0-9]*" | sed "s/^/	/" | grep -n .'
 
 _listcapture () {
  tmp=$_all
